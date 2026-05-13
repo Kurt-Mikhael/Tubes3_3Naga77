@@ -1,0 +1,23 @@
+{
+  "name": "judol-detector",
+  "version": "1.0.0",
+  "description": "Chromium Browser Extension untuk deteksi konten judi online menggunakan algoritma KMP, Boyer-Moore, dan Regex",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "watch": "vite build --watch"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.268",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.11"
+  },
+  "keywords": [
+    "chrome-extension",
+    "pattern-matching",
+    "kmp",
+    "boyer-moore",
+    "judol-detector"
+  ]
+}

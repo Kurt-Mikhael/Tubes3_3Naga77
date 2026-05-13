@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Judol Detector</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <header class="popup-header">
+      <div class="header-title">
+        <h1>Judol Detector</h1>
+      </div>
+      <span class="header-meta">Panel Kontrol</span>
+    </header>
+
+    <main class="popup-content">
+      <section class="summary-section">
+        <div class="summary-label">Total Terdeteksi</div>
+        <div class="summary-value" id="total-keywords">0</div>
+      </section>
+
+      <section class="detail-section">
+        <div class="section-header">
+          <h2>Performa Algoritma</h2>
+        </div>
+
+        <div class="algo-list">
+          <div class="algo-item">
+            <div class="algo-meta">
+              <span class="algo-name">Knuth-Morris-Pratt</span>
+              <span class="algo-detail">Exact matching dengan prefix function</span>
+            </div>
+            <div class="algo-data">
+              <span class="data-value" id="kmp-matches">0</span>
+              <span class="data-unit">match</span>
+            </div>
+            <div class="algo-time">
+              <span class="time-value mono" id="kmp-time">0</span>
+              <span class="time-unit">ms</span>
+            </div>
+          </div>
+
+          <div class="algo-item">
+            <div class="algo-meta">
+              <span class="algo-name">Boyer-Moore</span>
+              <span class="algo-detail">Exact matching dengan bad char table</span>
+            </div>
+            <div class="algo-data">
+              <span class="data-value" id="bm-matches">0</span>
+              <span class="data-unit">match</span>
+            </div>
+            <div class="algo-time">
+              <span class="time-value mono" id="bm-time">0</span>
+              <span class="time-unit">ms</span>
+            </div>
+          </div>
+
+          <div class="algo-item">
+            <div class="algo-meta">
+              <span class="algo-name">Regular Expression</span>
+              <span class="algo-detail">Pattern &lt;kata&gt;&lt;angka&gt;</span>
+            </div>
+            <div class="algo-data">
+              <span class="data-value" id="regex-matches">0</span>
+              <span class="data-unit">match</span>
+            </div>
+            <div class="algo-time">
+              <span class="time-value mono" id="regex-time">0</span>
+              <span class="time-unit">ms</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="chart-section">
+        <div class="section-header">
+          <h2>Distribusi Temuan</h2>
+        </div>
+        <div class="chart-body" id="chart-body">
+          <div class="chart-row">
+            <span class="chart-label">KMP</span>
+            <div class="chart-bar-bg">
+              <div class="chart-bar-fill kmp" id="bar-kmp" style="width: 0%"></div>
+            </div>
+            <span class="chart-number mono" id="bar-val-kmp">0</span>
+          </div>
+          <div class="chart-row">
+            <span class="chart-label">BM</span>
+            <div class="chart-bar-bg">
+              <div class="chart-bar-fill bm" id="bar-bm" style="width: 0%"></div>
+            </div>
+            <span class="chart-number mono" id="bar-val-bm">0</span>
+          </div>
+          <div class="chart-row">
+            <span class="chart-label">RegEx</span>
+            <div class="chart-bar-bg">
+              <div class="chart-bar-fill regex" id="bar-regex" style="width: 0%"></div>
+            </div>
+            <span class="chart-number mono" id="bar-val-regex">0</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="popup-footer">
+      <button id="rescan-btn" class="btn-primary">Scan Ulang Halaman</button>
+    </footer>
+  </div>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

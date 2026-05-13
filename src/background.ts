@@ -1,0 +1,3 @@
+/**
+ * Background Service Worker - placeholder
+ */

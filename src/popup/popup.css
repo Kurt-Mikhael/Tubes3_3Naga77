@@ -1,0 +1,266 @@
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background: #ffffff;
+  color: #111827;
+  width: 380px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.popup-container {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Header ─── */
+.popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #030712;
+  color: #fff;
+  padding: 18px 20px;
+  border-bottom: 1px solid #1f2937;
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+}
+
+.popup-header h1 {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.header-meta {
+  font-size: 11px;
+  color: #9ca3af;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ─── Summary ─── */
+.summary-section {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.summary-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+
+.summary-value {
+  font-size: 42px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #d97706;
+  letter-spacing: -0.02em;
+}
+
+/* ─── Sections ─── */
+.detail-section,
+.chart-section {
+  padding: 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.section-header {
+  margin-bottom: 14px;
+}
+
+.section-header h2 {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #374151;
+}
+
+/* ─── Algorithm List ─── */
+.algo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.algo-item {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.algo-item:last-child {
+  border-bottom: none;
+}
+
+.algo-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.algo-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+  white-space: nowrap;
+}
+
+.algo-detail {
+  font-size: 11px;
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+.algo-data {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 60px;
+  justify-content: flex-end;
+}
+
+.data-value {
+  font-size: 18px;
+  font-weight: 800;
+  color: #111827;
+  line-height: 1;
+}
+
+.data-unit {
+  font-size: 11px;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.algo-time {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  min-width: 64px;
+  justify-content: flex-end;
+}
+
+.time-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.time-unit {
+  font-size: 11px;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+/* ─── Chart ─── */
+.chart-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chart-row {
+  display: grid;
+  grid-template-columns: 44px 1fr 32px;
+  align-items: center;
+  gap: 10px;
+}
+
+.chart-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.chart-bar-bg {
+  height: 10px;
+  background: #e5e7eb;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.chart-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chart-bar-fill.kmp {
+  background: #111827;
+}
+
+.chart-bar-fill.bm {
+  background: #4b5563;
+}
+
+.chart-bar-fill.regex {
+  background: #d97706;
+}
+
+.chart-number {
+  font-size: 12px;
+  font-weight: 700;
+  color: #374151;
+  text-align: right;
+}
+
+/* ─── Footer / Button ─── */
+.popup-footer {
+  padding: 16px 20px;
+  background: #f9fafb;
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 11px 16px;
+  background: #111827;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  transition: background 0.15s ease;
+}
+
+.btn-primary:hover {
+  background: #374151;
+}
+
+.btn-primary:active {
+  background: #030712;
+}
+
+/* ─── Empty / Zero state helper ─── */
+.zero {
+  color: #d1d5db;
+}

@@ -14,7 +14,8 @@ export interface FuzzyRes{
 export interface ExactRes {
     keyword: string,
     index: number,
-    count: number,
+    count: number, // kemunculan keyword
+    comparisons: number, // jumlah perbandingan karakter, buat statistik
     algorithm: 'KMP' | 'BM' |'AC' | 'RK'
 }
 

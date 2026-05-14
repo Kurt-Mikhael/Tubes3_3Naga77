@@ -44,12 +44,11 @@ export async function runPipeline(text: string): Promise<PipelineRes> {
         ...rkResults.map(r => r.keyword.toLowerCase()),
     ]);
 
-    const missedFromExact = cachedWords.filter(w => !foundKeywords.has(w.toLowerCase())).map(w => w.replace(/\d+$/, '')).filter(w => w.length > 0);
-
+    const regexWords = cachedWords.map(w => w.replace(/\d+$/, '')).filter(w => w.length > 0)
     const t4 = performance.now();
-    const regexMatches = regexSearch(missedFromExact, text);
+    const regexMatches = regexSearch(regexWords, text);
     const regexTime = performance.now() - t4;
-    regexMatches.forEach(r => foundKeywords.add(r.matchedWord.toLowerCase()));
+    regexMatches.forEach(r => foundKeywords.add(r.keyword.toLowerCase()));
 
     const missedFromExactRegex = cachedWords
         .filter(w => !foundKeywords.has(w.toLowerCase()));

@@ -6,12 +6,14 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "watch": "vite build --watch"
+    "watch": "vite build --watch",
+    "test": "vitest"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.268",
     "typescript": "^5.4.5",
-    "vite": "^5.2.11"
+    "vite": "^5.2.11",
+    "vitest": "^4.1.6"
   },
   "keywords": [
     "chrome-extension",

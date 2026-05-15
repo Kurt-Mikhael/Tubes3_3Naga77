@@ -64,7 +64,7 @@ export function kmpSearch(keywords: string[], text: string): ExactRes[] {
             }
         }
 
-        // Mapping index to ExactRes
+        // Mapping to ExactRes
         for (const matchIndex of matchIndices) {
             results.push({
                 keyword: keyword,

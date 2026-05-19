@@ -1,0 +1,68 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { runPipeline, clearPipelineCache } from './pipeline';
+import * as keywordLoader from '../utils/keyword-loader';
+
+// Mock performance.now
+if (typeof performance === 'undefined') {
+    (global as any).performance = { now: vi.fn(() => Date.now()) };
+}
+
+vi.mock('../utils/keyword-loader', () => ({
+    loadKeywords: vi.fn(),
+    separateWords: vi.fn((lines: string[]) => {
+        const keywords: string[] = [];
+        for(const l of lines){
+            const splitWords = l.split(" ").map(k => k.trim()).filter(k =>k.length > 0 && isNaN(Number(k)));
+            for (const w of splitWords){
+                keywords.push(w)
+            }
+        }
+        return keywords;
+    })
+}));
+
+describe('Pipeline', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        clearPipelineCache();
+    });
+
+    it('should run all algorithms and return results', async () => {
+        (keywordLoader.loadKeywords as any).mockResolvedValue(['slot gacor88', 'judionline']);
+        
+        const text = "Ayo main slot gacor88 di situs judionline";
+        const result = await runPipeline(text);
+
+        // Exact match for 'slot', 'gacor88', 'judionline'
+        // wait, separateWords for 'slot gacor88' returns ['slot', 'gacor88']
+        expect(result.exact.kmp.length).toBeGreaterThan(0);
+        expect(result.exact.bm.length).toBeGreaterThan(0);
+        expect(result.exact.ahoCorasick.length).toBeGreaterThan(0);
+        expect(result.exact.rabinKarp.length).toBeGreaterThan(0);
+        
+        // Regex for 'gacor' (from 'gacor88' with digits stripped) -> finds 'gacor88'
+        expect(result.regex.length).toBeGreaterThan(0);
+        
+        expect(result.executionTime).toBeDefined();
+    });
+
+    it('should find fuzzy matches for missed keywords', async () => {
+        (keywordLoader.loadKeywords as any).mockResolvedValue(['maxwin']);
+        
+        const text = "Dapatkan m4xwin sekarang";
+        const result = await runPipeline(text);
+
+        expect(result.exact.kmp.length).toBe(0);
+        expect(result.fuzzy.length).toBe(1);
+        expect(result.fuzzy[0].matchedWord).toBe("m4xwin");
+        expect(result.fuzzy[0].keyword).toBe("maxwin");
+    });
+    
+    it('should handle empty text', async () => {
+        (keywordLoader.loadKeywords as any).mockResolvedValue(['slot']);
+        const result = await runPipeline("");
+        expect(result.exact.kmp.length).toBe(0);
+        expect(result.regex.length).toBe(0);
+        expect(result.fuzzy.length).toBe(0);
+    });
+});

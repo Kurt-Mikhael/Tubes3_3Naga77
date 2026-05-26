@@ -1,3 +1,153 @@
-/**
- * Popup Script - placeholder
- */
+
+
+interface PipelineData {
+    exact: {
+        kmp: any[];
+        bm: any[];
+        ahoCorasick: any[];
+        rabinKarp: any[];
+    };
+    regex: any[];
+    fuzzy: any[];
+    executionTime: {
+        kmp: number;
+        bm: number;
+        ahoCorasick: number;
+        rabinKarp: number;
+        regex: number;
+        fuzzy: number;
+    };
+}
+
+async function initPopup() {
+    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    const activeTab = tabs[0];
+    if (!activeTab || !activeTab.id) return;
+
+    const tabId = activeTab.id;
+
+    // Ambil hasil dari background
+    chrome.runtime.sendMessage({ type: 'GET_RESULTS', tabId }, (response) => {
+        if (response && response.data) {
+            updateUI(response.data);
+        }
+    });
+
+    // Tombol rescan
+    const rescanBtn = document.getElementById('rescan-btn') as HTMLButtonElement;
+    if (rescanBtn) {
+        rescanBtn.addEventListener('click', () => {
+            rescanBtn.textContent = 'Scanning...';
+            rescanBtn.disabled = true;
+
+            chrome.runtime.sendMessage({ type: 'RESCAN', tabId }, () => {
+                // Tunggu sebentar lalu refresh data
+                setTimeout(() => {
+                    chrome.runtime.sendMessage({ type: 'GET_RESULTS', tabId }, (response) => {
+                        if (response && response.data) {
+                            updateUI(response.data);
+                        }
+                        rescanBtn.textContent = 'Scan Ulang Halaman';
+                        rescanBtn.disabled = false;
+                    });
+                }, 500);
+            });
+        });
+    }
+
+    // Toggle blur
+    const blurToggle = document.getElementById('blur-toggle') as HTMLInputElement;
+    if (blurToggle) {
+        blurToggle.addEventListener('change', () => {
+            chrome.runtime.sendMessage({ type: 'TOGGLE_BLUR', tabId, enabled: blurToggle.checked });
+        });
+    }
+
+    // OCR button
+    const ocrBtn = document.getElementById('ocr-btn') as HTMLButtonElement;
+    if (ocrBtn) {
+        ocrBtn.addEventListener('click', () => {
+            ocrBtn.textContent = 'Scanning Gambar...';
+            ocrBtn.disabled = true;
+
+            chrome.runtime.sendMessage({ type: 'RUN_OCR', tabId }, (response) => {
+                ocrBtn.textContent = 'Scan Gambar (OCR)';
+                ocrBtn.disabled = false;
+                if (response && response.ok) {
+                    const ocrResult = document.getElementById('ocr-result');
+                    if (ocrResult) {
+                        ocrResult.textContent = `Gambar terdeteksi: ${response.data?.detected || 0}, Diblur: ${response.data?.blurred || 0}`;
+                        ocrResult.style.display = 'block';
+                    }
+                }
+            });
+        });
+    }
+}
+
+function updateUI(data: PipelineData) {
+    const exactKmp = data.exact.kmp.length;
+    const exactBm = data.exact.bm.length;
+    const exactAc = data.exact.ahoCorasick.length;
+    const exactRk = data.exact.rabinKarp.length;
+    const regexCount = data.regex.length;
+    const fuzzyCount = data.fuzzy.length;
+
+    // Total unique keywords
+    const uniqueKeywords = new Set<string>();
+    data.exact.kmp.forEach((r: any) => uniqueKeywords.add(r.keyword.toLowerCase()));
+    data.exact.bm.forEach((r: any) => uniqueKeywords.add(r.keyword.toLowerCase()));
+    data.exact.ahoCorasick.forEach((r: any) => uniqueKeywords.add(r.keyword.toLowerCase()));
+    data.exact.rabinKarp.forEach((r: any) => uniqueKeywords.add(r.keyword.toLowerCase()));
+    data.regex.forEach((r: any) => uniqueKeywords.add(r.keyword.toLowerCase()));
+    data.fuzzy.forEach((r: any) => uniqueKeywords.add(r.keyword.toLowerCase()));
+
+    const totalUnique = uniqueKeywords.size;
+
+    // Update total
+    const totalEl = document.getElementById('total-keywords');
+    if (totalEl) totalEl.textContent = String(totalUnique);
+
+    // Update match counts
+    updateElement('kmp-matches', exactKmp);
+    updateElement('bm-matches', exactBm);
+    updateElement('ac-matches', exactAc);
+    updateElement('rk-matches', exactRk);
+    updateElement('regex-matches', regexCount);
+    updateElement('fuzzy-matches', fuzzyCount);
+
+    // Update times
+    updateElement('kmp-time', formatTime(data.executionTime.kmp));
+    updateElement('bm-time', formatTime(data.executionTime.bm));
+    updateElement('ac-time', formatTime(data.executionTime.ahoCorasick));
+    updateElement('rk-time', formatTime(data.executionTime.rabinKarp));
+    updateElement('regex-time', formatTime(data.executionTime.regex));
+    updateElement('fuzzy-time', formatTime(data.executionTime.fuzzy));
+
+    // Update chart bars
+    const maxVal = Math.max(exactKmp, exactBm, exactAc, exactRk, regexCount, fuzzyCount, 1);
+    updateBar('bar-kmp', 'bar-val-kmp', exactKmp, maxVal);
+    updateBar('bar-bm', 'bar-val-bm', exactBm, maxVal);
+    updateBar('bar-ac', 'bar-val-ac', exactAc, maxVal);
+    updateBar('bar-rk', 'bar-val-rk', exactRk, maxVal);
+    updateBar('bar-regex', 'bar-val-regex', regexCount, maxVal);
+    updateBar('bar-fuzzy', 'bar-val-fuzzy', fuzzyCount, maxVal);
+}
+
+function updateElement(id: string, value: number | string) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = String(value);
+}
+
+function formatTime(ms: number): string {
+    return ms.toFixed(3);
+}
+
+function updateBar(barId: string, valId: string, value: number, max: number) {
+    const bar = document.getElementById(barId);
+    const val = document.getElementById(valId);
+    if (bar) bar.style.width = `${(value / max) * 100}%`;
+    if (val) val.textContent = String(value);
+}
+
+document.addEventListener('DOMContentLoaded', initPopup);

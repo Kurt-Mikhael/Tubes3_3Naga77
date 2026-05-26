@@ -16,6 +16,13 @@ let tooltipEl: HTMLElement | null = null;
 let isBlurEnabled = false;
 let isOcrRunning = false;
 let tooltipSetupDone = false;
+let isOcrEnabled = false;
+
+// Keep track of images already processed so we don't re-scan them
+const ocrProcessedImages = new WeakSet<HTMLImageElement>();
+
+// Reuse a single Tesseract worker across scans
+let tesseractWorker: any = null;
 
 async function scanPage(): Promise<void> {
     clearHighlights();
@@ -165,6 +172,18 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return false;
     }
 
+    if (message.type === 'TOGGLE_OCR') {
+        isOcrEnabled = message.enabled;
+        setOcrEnabled(isOcrEnabled);
+        if (isOcrEnabled) {
+            runOcr().then(res => {
+                chrome.runtime.sendMessage({ type: 'OCR_COMPLETE', tabId: sender.tab?.id, data: res });
+            });
+        }
+        sendResponse({ ok: true });
+        return false;
+    }
+
     if (message.type === 'RUN_OCR') {
         runOcr().then(res => {
             sendResponse({ ok: true, data: res });
@@ -178,54 +197,122 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 
+async function getOrCreateWorker() {
+    if (tesseractWorker) return tesseractWorker;
+    const Tesseract = await import('tesseract.js');
+    tesseractWorker = await Tesseract.createWorker('eng');
+    return tesseractWorker;
+}
+
+async function terminateWorker() {
+    if (tesseractWorker) {
+        await tesseractWorker.terminate();
+        tesseractWorker = null;
+    }
+}
+
 async function runOcr(): Promise<{ detected: number; blurred: number }> {
     if (isOcrRunning) return { detected: 0, blurred: 0 };
     isOcrRunning = true;
 
     try {
-        const Tesseract = await import('tesseract.js');
-        const images = Array.from(document.querySelectorAll('img'));
+        const worker = await getOrCreateWorker();
+        const allImages = Array.from(document.querySelectorAll('img'));
+
+        // Filter only images that are actually visible and large enough
+        const images = allImages.filter(img => {
+            const rect = img.getBoundingClientRect();
+            return rect.width >= 50 && rect.height >= 50;
+        });
+
+        console.log(`[JUDOL-DETECTOR] OCR: ${images.length} images found on page`);
+
         let detected = 0;
         let blurred = 0;
 
-        for (const img of images) {
-            if (!img.src || img.width < 50 || img.height < 50) continue;
+        for (let i = 0; i < images.length; i++) {
+            const img = images[i];
+            if (ocrProcessedImages.has(img)) continue;
+            ocrProcessedImages.add(img);
 
-            try {
-                const result = await Tesseract.createWorker('eng').then(async (worker) => {
-                    const ret = await worker.recognize(img.src);
-                    await worker.terminate();
-                    return ret;
-                });
+            // Try multiple image sources (lazy-loaded sites often use data-src)
+            const possibleSources = [
+                img.getAttribute('data-src'),
+                img.getAttribute('data-original'),
+                img.getAttribute('data-lazy-src'),
+                img.currentSrc,   // from srcset
+                img.src
+            ].filter((src): src is string => !!src && src.trim().length > 0);
 
-                const text = result.data.text;
-                if (!text.trim()) continue;
+            console.log(`[JUDOL-DETECTOR] OCR image #${i + 1}: trying ${possibleSources.length} sources`);
 
-                const pipelineRes = await runPipeline(text);
-                const totalMatches = pipelineRes.exact.kmp.length +
-                    pipelineRes.exact.bm.length +
-                    pipelineRes.exact.ahoCorasick.length +
-                    pipelineRes.exact.rabinKarp.length +
-                    pipelineRes.regex.length +
-                    pipelineRes.fuzzy.length;
+            let recognizedText = '';
+            let lastErr: any = null;
 
-                if (totalMatches > 0) {
-                    detected++;
-                    img.classList.add('judol-detector-blur');
-                    img.style.filter = 'blur(15px)';
-                    blurred++;
+            for (const imageSrc of possibleSources) {
+                try {
+                    console.log(`[JUDOL-DETECTOR] OCR recognizing: ${imageSrc.slice(0, 80)}...`);
+                    const result = await worker.recognize(imageSrc);
+                    recognizedText = result.data.text || '';
+                    if (recognizedText.trim()) {
+                        console.log(`[JUDOL-DETECTOR] OCR text found: "${recognizedText.trim().slice(0, 100)}..."`);
+                        break;
+                    }
+                } catch (err) {
+                    lastErr = err;
+                    // Continue to next source
                 }
-            } catch (e) {
-                console.error('[JUDOL-DETECTOR] OCR error on image:', e);}
+            }
+
+            if (!recognizedText.trim()) {
+                if (lastErr) {
+                    console.warn(`[JUDOL-DETECTOR] OCR failed for image #${i + 1}:`, lastErr);
+                }
+                continue;
+            }
+
+            const pipelineRes = await runPipeline(recognizedText);
+            const totalMatches = pipelineRes.exact.kmp.length +
+                pipelineRes.exact.bm.length +
+                pipelineRes.exact.ahoCorasick.length +
+                pipelineRes.exact.rabinKarp.length +
+                pipelineRes.regex.length +
+                pipelineRes.fuzzy.length;
+
+            console.log(`[JUDOL-DETECTOR] OCR image #${i + 1}: ${totalMatches} keyword matches`);
+
+            if (totalMatches > 0) {
+                detected++;
+                img.classList.add('judol-detector-blur');
+                if (isOcrEnabled) {
+                    img.style.filter = 'blur(15px)';
+                }
+                blurred++;
+                console.log(`[JUDOL-DETECTOR] OCR image #${i + 1} BLURRED`);
+            }
         }
 
+        console.log(`[JUDOL-DETECTOR] OCR complete: ${detected} detected, ${blurred} blurred`);
         return { detected, blurred };
     } catch (e) {
-        console.error('[JUDOL-DETECTOR] OCR error:', e);
+        console.error('[JUDOL-DETECTOR] OCR fatal error:', e);
         return { detected: 0, blurred: 0 };
     } finally {
         isOcrRunning = false;
     }
+}
+
+function setOcrEnabled(enabled: boolean): void {
+    isOcrEnabled = enabled;
+    const blurredImages = document.querySelectorAll('img.judol-detector-blur');
+    blurredImages.forEach(img => {
+        const el = img as HTMLElement;
+        if (enabled) {
+            el.style.filter = 'blur(15px)';
+        } else {
+            el.style.filter = '';
+        }
+    });
 }
 
 if (document.readyState === 'loading') {

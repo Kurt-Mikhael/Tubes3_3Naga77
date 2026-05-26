@@ -63,7 +63,23 @@ async function initPopup() {
         });
     }
 
-    // OCR button
+    // Toggle OCR
+    const ocrToggle = document.getElementById('ocr-toggle') as HTMLInputElement;
+    if (ocrToggle) {
+        // Load saved state
+        chrome.runtime.sendMessage({ type: 'GET_OCR_STATE', tabId }, (response) => {
+            if (response && response.state) {
+                ocrToggle.checked = response.state.enabled;
+                updateOcrResult(response.state.detected, response.state.blurred);
+            }
+        });
+
+        ocrToggle.addEventListener('change', () => {
+            chrome.runtime.sendMessage({ type: 'TOGGLE_OCR', tabId, enabled: ocrToggle.checked });
+        });
+    }
+
+    // OCR manual scan button
     const ocrBtn = document.getElementById('ocr-btn') as HTMLButtonElement;
     if (ocrBtn) {
         ocrBtn.addEventListener('click', () => {
@@ -71,17 +87,21 @@ async function initPopup() {
             ocrBtn.disabled = true;
 
             chrome.runtime.sendMessage({ type: 'RUN_OCR', tabId }, (response) => {
-                ocrBtn.textContent = 'Scan Gambar (OCR)';
+                ocrBtn.textContent = 'Scan Gambar Sekarang';
                 ocrBtn.disabled = false;
-                if (response && response.ok) {
-                    const ocrResult = document.getElementById('ocr-result');
-                    if (ocrResult) {
-                        ocrResult.textContent = `Gambar terdeteksi: ${response.data?.detected || 0}, Diblur: ${response.data?.blurred || 0}`;
-                        ocrResult.style.display = 'block';
-                    }
+                if (response && response.ok && response.data) {
+                    updateOcrResult(response.data.detected, response.data.blurred);
                 }
             });
         });
+    }
+}
+
+function updateOcrResult(detected: number, blurred: number) {
+    const ocrResult = document.getElementById('ocr-result');
+    if (ocrResult) {
+        ocrResult.textContent = `Gambar terdeteksi: ${detected}, Diblur: ${blurred}`;
+        ocrResult.style.display = 'block';
     }
 }
 

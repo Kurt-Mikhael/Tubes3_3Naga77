@@ -253,8 +253,8 @@ export function showTooltip(tooltip: HTMLElement, x: number, y: number, data: {
     const content = tooltip.querySelector('#tooltip-content') as HTMLElement;
 
     const isFuzzy = data.algorithm.includes('Fuzzy');
-    if (isFuzzy) {
-        header.textContent = `${data.keyword} (mirip: ${data.matchedWord})`;
+    if (isFuzzy) { 
+        header.textContent = `${data.matchedWord} (mirip: ${data.keyword})`;
     } else {
         header.textContent = data.keyword;
     }

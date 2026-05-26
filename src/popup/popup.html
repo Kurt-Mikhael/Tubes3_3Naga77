@@ -59,6 +59,36 @@
 
           <div class="algo-item">
             <div class="algo-meta">
+              <span class="algo-name">Aho-Corasick</span>
+              <span class="algo-detail">Multi-keyword exact matching</span>
+            </div>
+            <div class="algo-data">
+              <span class="data-value" id="ac-matches">0</span>
+              <span class="data-unit">match</span>
+            </div>
+            <div class="algo-time">
+              <span class="time-value mono" id="ac-time">0</span>
+              <span class="time-unit">ms</span>
+            </div>
+          </div>
+
+          <div class="algo-item">
+            <div class="algo-meta">
+              <span class="algo-name">Rabin-Karp</span>
+              <span class="algo-detail">Rolling hash exact matching</span>
+            </div>
+            <div class="algo-data">
+              <span class="data-value" id="rk-matches">0</span>
+              <span class="data-unit">match</span>
+            </div>
+            <div class="algo-time">
+              <span class="time-value mono" id="rk-time">0</span>
+              <span class="time-unit">ms</span>
+            </div>
+          </div>
+
+          <div class="algo-item">
+            <div class="algo-meta">
               <span class="algo-name">Regular Expression</span>
               <span class="algo-detail">Pattern &lt;kata&gt;&lt;angka&gt;</span>
             </div>
@@ -68,6 +98,21 @@
             </div>
             <div class="algo-time">
               <span class="time-value mono" id="regex-time">0</span>
+              <span class="time-unit">ms</span>
+            </div>
+          </div>
+
+          <div class="algo-item">
+            <div class="algo-meta">
+              <span class="algo-name">Fuzzy Levenshtein</span>
+              <span class="algo-detail">Weighted similarity matching</span>
+            </div>
+            <div class="algo-data">
+              <span class="data-value" id="fuzzy-matches">0</span>
+              <span class="data-unit">match</span>
+            </div>
+            <div class="algo-time">
+              <span class="time-value mono" id="fuzzy-time">0</span>
               <span class="time-unit">ms</span>
             </div>
           </div>
@@ -94,12 +139,51 @@
             <span class="chart-number mono" id="bar-val-bm">0</span>
           </div>
           <div class="chart-row">
+            <span class="chart-label">AC</span>
+            <div class="chart-bar-bg">
+              <div class="chart-bar-fill ac" id="bar-ac" style="width: 0%"></div>
+            </div>
+            <span class="chart-number mono" id="bar-val-ac">0</span>
+          </div>
+          <div class="chart-row">
+            <span class="chart-label">RK</span>
+            <div class="chart-bar-bg">
+              <div class="chart-bar-fill rk" id="bar-rk" style="width: 0%"></div>
+            </div>
+            <span class="chart-number mono" id="bar-val-rk">0</span>
+          </div>
+          <div class="chart-row">
             <span class="chart-label">RegEx</span>
             <div class="chart-bar-bg">
               <div class="chart-bar-fill regex" id="bar-regex" style="width: 0%"></div>
             </div>
             <span class="chart-number mono" id="bar-val-regex">0</span>
           </div>
+          <div class="chart-row">
+            <span class="chart-label">Fuzzy</span>
+            <div class="chart-bar-bg">
+              <div class="chart-bar-fill fuzzy" id="bar-fuzzy" style="width: 0%"></div>
+            </div>
+            <span class="chart-number mono" id="bar-val-fuzzy">0</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="bonus-section">
+        <div class="section-header">
+          <h2>Fitur Bonus</h2>
+        </div>
+
+        <div class="toggle-row">
+          <label class="toggle-label">
+            <input type="checkbox" id="blur-toggle">
+            <span class="toggle-text">Blur Teks Terdeteksi</span>
+          </label>
+        </div>
+
+        <div class="ocr-row">
+          <button id="ocr-btn" class="btn-secondary">Scan Gambar (OCR)</button>
+          <div id="ocr-result" class="ocr-result" style="display: none;"></div>
         </div>
       </section>
     </main>

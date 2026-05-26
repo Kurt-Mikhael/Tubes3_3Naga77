@@ -3,7 +3,7 @@ import { RegexRes } from "../types/type"
 export function regexSearch(text: string): RegexRes[] {
     const res: RegexRes[] = [];
     
-    const pattern = new RegExp('\\b[A-Za-z]{2,}\\d{2,}\\b', 'gi');
+    const pattern = new RegExp('[A-Za-z]{2,}\\d{2,3}', 'gi');    
     const matches = text.matchAll(pattern);
 
     for (const match of matches) {

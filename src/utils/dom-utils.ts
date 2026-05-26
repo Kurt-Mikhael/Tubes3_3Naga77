@@ -22,14 +22,14 @@ export function walkTextNodes(root: Node): TextNodeInfo[] {
 
         if (node.nodeType === Node.TEXT_NODE) {
             const text = node.textContent || '';
-            if (text.trim().length > 0) {
+            if (text.length > 0) {
                 nodes.push({
                     node: node as Text,
                     startIndex: currentIndex,
                     endIndex: currentIndex + text.length,
                 });
-                currentIndex += text.length;
             }
+            currentIndex += text.length;
         } else {
             for (const child of Array.from(node.childNodes)) {
                 traverse(child);
@@ -108,6 +108,110 @@ export function highlightRange(
     }
 }
 
+export interface HighlightMatch {
+    startGlobal: number;
+    endGlobal: number;
+    keyword: string;
+    matchedWord?: string;
+    algorithm: string;
+    count: number;
+    comparisons: number;
+    timeMs: number;
+}
+
+export function highlightAll(
+    nodes: TextNodeInfo[],
+    matches: HighlightMatch[]
+): void {
+    if (matches.length === 0) return;
+
+    const nodeHighlights = new Map<TextNodeInfo, { startLocal: number; endLocal: number; match: HighlightMatch }[]>();
+
+    for (const match of matches) {
+        for (const info of nodes) {
+            const overlapStart = Math.max(match.startGlobal, info.startIndex);
+            const overlapEnd = Math.min(match.endGlobal, info.endIndex);
+            if (overlapStart < overlapEnd) {
+                if (!nodeHighlights.has(info)) nodeHighlights.set(info, []);
+                nodeHighlights.get(info)!.push({
+                    startLocal: overlapStart - info.startIndex,
+                    endLocal: overlapEnd - info.startIndex,
+                    match
+                });
+            }
+        }
+    }
+
+    for (const [info, ranges] of nodeHighlights) {
+        const parent = info.node.parentNode;
+        if (!parent) continue;
+
+        const text = info.node.textContent || '';
+
+        // Deduplicate and sort by startLocal
+        const seen = new Set<string>();
+        const uniqueRanges = ranges.filter(r => {
+            const key = `${r.startLocal}_${r.endLocal}_${r.match.keyword}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        }).sort((a, b) => a.startLocal - b.startLocal);
+
+        if (uniqueRanges.length === 0) continue;
+
+        // Merge overlapping ranges
+        const merged: { start: number; end: number; match: HighlightMatch }[] = [];
+        for (const r of uniqueRanges) {
+            const last = merged[merged.length - 1];
+            if (last && r.startLocal < last.end) {
+                // Overlap: extend if this range goes farther, adopt its match data
+                if (r.endLocal > last.end) {
+                    last.end = r.endLocal;
+                    last.match = r.match;
+                }
+            } else {
+                merged.push({ start: r.startLocal, end: r.endLocal, match: r.match });
+            }
+        }
+
+        // Build segments: text, match, text, match, ...
+        const segments: { start: number; end: number; match: HighlightMatch | null }[] = [];
+        let current = 0;
+
+        for (const r of merged) {
+            if (r.start > current) {
+                segments.push({ start: current, end: r.start, match: null });
+            }
+            segments.push({ start: r.start, end: r.end, match: r.match });
+            current = r.end;
+        }
+        if (current < text.length) {
+            segments.push({ start: current, end: text.length, match: null });
+        }
+
+        const fragment = document.createDocumentFragment();
+        for (const seg of segments) {
+            const slice = text.slice(seg.start, seg.end);
+            if (seg.match) {
+                const span = document.createElement('span');
+                span.className = 'judol-detector-highlight';
+                span.textContent = slice;
+                span.dataset.keyword = seg.match.keyword;
+                span.dataset.matchedWord = seg.match.matchedWord || seg.match.keyword;
+                span.dataset.algorithm = seg.match.algorithm;
+                span.dataset.count = String(seg.match.count);
+                span.dataset.comparisons = String(seg.match.comparisons);
+                span.dataset.timeMs = String(seg.match.timeMs.toFixed(3));
+                fragment.appendChild(span);
+            } else {
+                fragment.appendChild(document.createTextNode(slice));
+            }
+        }
+
+        parent.replaceChild(fragment, info.node);
+    }
+}
+
 
 export function clearHighlights(doc: Document = document): void {
     const highlights = doc.querySelectorAll('.judol-detector-highlight, .judol-detector-blur');
@@ -120,9 +224,7 @@ export function clearHighlights(doc: Document = document): void {
     });
 }
 
-/**
- * Buat tooltip element dan attach ke document.body
- */
+
 export function createTooltip(): HTMLElement {
     const old = document.getElementById('judol-detector-tooltip');
     if (old) old.remove();
@@ -141,6 +243,7 @@ export function createTooltip(): HTMLElement {
 
 export function showTooltip(tooltip: HTMLElement, x: number, y: number, data: {
     keyword: string;
+    matchedWord: string;
     algorithm: string;
     count: string;
     comparisons: string;
@@ -149,7 +252,13 @@ export function showTooltip(tooltip: HTMLElement, x: number, y: number, data: {
     const header = tooltip.querySelector('#tooltip-header') as HTMLElement;
     const content = tooltip.querySelector('#tooltip-content') as HTMLElement;
 
-    header.textContent = data.keyword;
+    const isFuzzy = data.algorithm.includes('Fuzzy');
+    if (isFuzzy) {
+        header.textContent = `${data.keyword} (mirip: ${data.matchedWord})`;
+    } else {
+        header.textContent = data.keyword;
+    }
+
     content.innerHTML = `
         <p><strong>Algoritma:</strong> ${data.algorithm}</p>
         <p><strong>Kemunculan:</strong> ${data.count}</p>
@@ -162,9 +271,7 @@ export function showTooltip(tooltip: HTMLElement, x: number, y: number, data: {
     tooltip.classList.add('visible');
 }
 
-/**
- * Sembunyikan tooltip
- */
+
 export function hideTooltip(tooltip: HTMLElement): void {
     tooltip.classList.remove('visible');
 }

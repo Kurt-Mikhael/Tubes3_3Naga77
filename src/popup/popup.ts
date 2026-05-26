@@ -132,6 +132,47 @@ function updateUI(data: PipelineData) {
     updateBar('bar-rk', 'bar-val-rk', exactRk, maxVal);
     updateBar('bar-regex', 'bar-val-regex', regexCount, maxVal);
     updateBar('bar-fuzzy', 'bar-val-fuzzy', fuzzyCount, maxVal);
+
+    renderFuzzyDetails(data.fuzzy);
+}
+
+function renderFuzzyDetails(fuzzyMatches: any[]) {
+    const container = document.getElementById('fuzzy-details');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    if (fuzzyMatches.length === 0) {
+        container.innerHTML = '<p class="fuzzy-empty">Tidak ada fuzzy match ditemukan.</p>';
+        return;
+    }
+
+    const seen = new Set<string>();
+    const uniqueMatches = [];
+    for (const m of fuzzyMatches) {
+        const key = `${m.keyword.toLowerCase()}_${m.matchedWord.toLowerCase()}`;
+        if (!seen.has(key)) {
+            seen.add(key);
+            uniqueMatches.push(m);
+        }
+    }
+
+    for (const match of uniqueMatches) {
+        const item = document.createElement('div');
+        item.className = 'fuzzy-item';
+        item.innerHTML = `
+            <span class="fuzzy-keyword">${escapeHtml(match.keyword)}</span>
+            <span class="fuzzy-arrow">→</span>
+            <span class="fuzzy-match">${escapeHtml(match.matchedWord)}</span>
+            <span class="fuzzy-score">dist ${match.difDis}</span>`;
+        container.appendChild(item);
+    }
+}
+
+function escapeHtml(text: string): string {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 function updateElement(id: string, value: number | string) {

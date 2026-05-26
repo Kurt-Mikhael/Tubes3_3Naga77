@@ -2,7 +2,7 @@ import { runPipeline } from '../core/pipeline';
 import {
     walkTextNodes,
     buildAggregatedText,
-    highlightRange,
+    highlightAll,
     clearHighlights,
     createTooltip,
     showTooltip,
@@ -10,6 +10,7 @@ import {
     setBlurEnabled
 } from '../utils/dom-utils';
 import { ExactRes, RegexRes, FuzzyRes } from '../types/type';
+import { HighlightMatch } from '../utils/dom-utils';
 
 let tooltipEl: HTMLElement | null = null;
 let isBlurEnabled = false;
@@ -48,9 +49,13 @@ async function scanPage(): Promise<void> {
         }
     }
 
+    const allMatches: HighlightMatch[] = [];
+
+    // Exact matches
     for (const match of uniqueExact) {
-        const end = match.index + match.keyword.length;
-        highlightRange(textNodes, match.index, end, {
+        allMatches.push({
+            startGlobal: match.index,
+            endGlobal: match.index + match.keyword.length,
             keyword: match.keyword,
             algorithm: match.algorithm,
             count: match.count,
@@ -59,9 +64,11 @@ async function scanPage(): Promise<void> {
         });
     }
 
+    // Regex matches
     for (const match of results.regex) {
-        const end = match.index + match.matchedWord.length;
-        highlightRange(textNodes, match.index, end, {
+        allMatches.push({
+            startGlobal: match.index,
+            endGlobal: match.index + match.matchedWord.length,
             keyword: match.matchedWord,
             algorithm: 'RegEx',
             count: results.regex.length,
@@ -70,16 +77,21 @@ async function scanPage(): Promise<void> {
         });
     }
 
+    // Fuzzy matches
     for (const match of results.fuzzy) {
-        const end = match.index + match.matchedWord.length;
-        highlightRange(textNodes, match.index, end, {
-            keyword: match.matchedWord,
+        allMatches.push({
+            startGlobal: match.index,
+            endGlobal: match.index + match.matchedWord.length,
+            keyword: match.keyword,
+            matchedWord: match.matchedWord,
             algorithm: 'Fuzzy (Weighted Levenshtein)',
             count: results.fuzzy.length,
             comparisons: 0,
             timeMs: results.executionTime.fuzzy,
         });
     }
+
+    highlightAll(textNodes, allMatches);
 
     if (isBlurEnabled) {
         setBlurEnabled(true);
@@ -117,6 +129,7 @@ function setupTooltip(): void {
             const rect = target.getBoundingClientRect();
             showTooltip(tooltipEl!, rect.left + rect.width / 2, rect.top, {
                 keyword: target.dataset.keyword || '',
+                matchedWord: target.dataset.matchedWord || target.dataset.keyword || '',
                 algorithm: target.dataset.algorithm || '',
                 count: target.dataset.count || '0',
                 comparisons: target.dataset.comparisons || '0',

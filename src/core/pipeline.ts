@@ -8,11 +8,9 @@ import { regexSearch } from '../algorithms/regex';
 import { fuzzySearch } from '../algorithms/weighted-levenshtein';
 
 let loadedLines: string[] | null = null
-let separatedWords: string[] | null = null
 
 export function clearPipelineCache() {
     loadedLines = null;
-    separatedWords = null;
 }
 
 export async function runPipeline(text: string): Promise<PipelineRes> {
@@ -20,12 +18,8 @@ export async function runPipeline(text: string): Promise<PipelineRes> {
         loadedLines = await loadKeywords();
     }
 
-    if (!separatedWords){
-        separatedWords = await separateWords(loadedLines);
-    }
-
     const cachedLines = loadedLines!;
-    const cachedWords = separatedWords!;
+    const cachedWords = separateWords(cachedLines);
 
     const t0 = performance.now();
     const kmpResults = kmpSearch(cachedLines, text);

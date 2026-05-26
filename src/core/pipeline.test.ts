@@ -33,14 +33,11 @@ describe('Pipeline', () => {
         const text = "Ayo main slot gacor88 di situs judionline";
         const result = await runPipeline(text);
 
-        // Exact match for 'slot', 'gacor88', 'judionline'
-        // wait, separateWords for 'slot gacor88' returns ['slot', 'gacor88']
         expect(result.exact.kmp.length).toBeGreaterThan(0);
         expect(result.exact.bm.length).toBeGreaterThan(0);
         expect(result.exact.ahoCorasick.length).toBeGreaterThan(0);
         expect(result.exact.rabinKarp.length).toBeGreaterThan(0);
         
-        // Regex for 'gacor' (from 'gacor88' with digits stripped) -> finds 'gacor88'
         expect(result.regex.length).toBeGreaterThan(0);
         
         expect(result.executionTime).toBeDefined();

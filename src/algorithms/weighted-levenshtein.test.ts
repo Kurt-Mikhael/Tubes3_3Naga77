@@ -17,8 +17,6 @@ describe('Weighted Levenshtein (Fuzzy Search)', () => {
         const keywords = ["gacor"];
         const results = fuzzySearch(keywords, text);
 
-        // 'g4cor' vs 'gacor': distance is 0.2 (A -> 4)
-        // normalized: 0.2 / 5 = 0.04
         expect(results.length).toBe(1);
         expect(results[0].matchedWord).toBe("g4cor");
         expect(results[0].difDis).toBeCloseTo(0.04);
@@ -29,10 +27,6 @@ describe('Weighted Levenshtein (Fuzzy Search)', () => {
         const keywords = ["login"];
         const results = fuzzySearch(keywords, text);
 
-        // 'l0g1n' vs 'login':
-        // o -> 0 (0.2)
-        // i -> 1 (0.2)
-        // Total cost: 0.4. Normalized: 0.4 / 5 = 0.08
         expect(results.length).toBe(1);
         expect(results[0].matchedWord).toBe("l0g1n");
         expect(results[0].difDis).toBeCloseTo(0.08);
@@ -43,8 +37,6 @@ describe('Weighted Levenshtein (Fuzzy Search)', () => {
         const keywords = ["maxwin"];
         const results = fuzzySearch(keywords, text);
 
-        // a -> а (0.1)
-        // normalized: 0.1 / 6 = 0.0166...
         expect(results.length).toBe(1);
         expect(results[0].difDis).toBeCloseTo(0.0166, 3);
     });
@@ -62,7 +54,6 @@ describe('Weighted Levenshtein (Fuzzy Search)', () => {
         const keywords = ["judi"];
         const results = fuzzySearch(keywords, text);
 
-        // i -> 1 is 0.2
         expect(results.length).toBe(1);
         expect(results[0].matchedWord).toBe("jud1");
         expect(results[0].difDis).toBeCloseTo(0.2 / 4);

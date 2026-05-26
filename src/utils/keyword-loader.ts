@@ -1,9 +1,7 @@
-/**
- * Keyword Loader - placeholder
- */
+
 export async function loadKeywords(): Promise<string[]> {
     try{
-        const url = chrome.runtime.getURL("../../keywords/keywords.txt");
+        const url = chrome.runtime.getURL("keywords.txt");
         const res = await fetch(url)
         if(!res.ok){
             throw new Error(`[KEYWORD-LOADER]: Gagal load keywords: ${res.status}`);

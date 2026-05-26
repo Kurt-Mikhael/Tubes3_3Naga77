@@ -220,8 +220,20 @@ body {
   background: #4b5563;
 }
 
+.chart-bar-fill.ac {
+  background: #7c3aed;
+}
+
+.chart-bar-fill.rk {
+  background: #0ea5e9;
+}
+
 .chart-bar-fill.regex {
   background: #d97706;
+}
+
+.chart-bar-fill.fuzzy {
+  background: #ec4899;
 }
 
 .chart-number {
@@ -258,6 +270,75 @@ body {
 
 .btn-primary:active {
   background: #030712;
+}
+
+/* ─── Bonus Section ─── */
+.bonus-section {
+  padding: 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #374151;
+}
+
+.toggle-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #111827;
+  cursor: pointer;
+}
+
+.ocr-row {
+  margin-top: 8px;
+}
+
+.btn-secondary {
+  width: 100%;
+  padding: 10px 16px;
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.btn-secondary:hover {
+  background: #e5e7eb;
+}
+
+.btn-secondary:active {
+  background: #d1d5db;
+}
+
+.btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ocr-result {
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #166534;
 }
 
 /* ─── Empty / Zero state helper ─── */

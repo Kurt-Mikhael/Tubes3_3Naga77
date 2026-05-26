@@ -11,6 +11,7 @@
   },
   "devDependencies": {
     "@types/chrome": "^0.0.268",
+    "happy-dom": "^20.9.0",
     "typescript": "^5.4.5",
     "vite": "^5.2.11",
     "vitest": "^4.1.6"

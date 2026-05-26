@@ -49,28 +49,15 @@ export async function runPipeline(text: string): Promise<PipelineRes> {
         ...rkResults.map(r => r.keyword.toLowerCase()),
     ]);
 
-    const regexToOriginal = new Map<string, string[]>();
-    for (const w of cachedWords) {
-        const base = w.replace(/\d+$/, '');
-        if (base.length > 0) {
-            if (!regexToOriginal.has(base)) regexToOriginal.set(base, []);
-            regexToOriginal.get(base)!.push(w);
-        }
-    }
-    const regexWords = Array.from(regexToOriginal.keys());
 
     const t4 = performance.now();
-    const regexMatches = regexSearch(regexWords, text);
+    const regexMatches = regexSearch(text);
     const regexTime = performance.now() - t4;
-    
+
     regexMatches.forEach(r => {
         foundKeywords.add(r.keyword.toLowerCase());
-        const originals = regexToOriginal.get(r.keyword);
-        if (originals) {
-            originals.forEach(o => foundKeywords.add(o.toLowerCase()));
-        }
     });
-
+    
     const missedFromExactRegex = cachedWords
         .filter(w => !foundKeywords.has(w.toLowerCase()));
 

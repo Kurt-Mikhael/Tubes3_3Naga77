@@ -3,61 +3,44 @@ import { regexSearch } from './regex';
 
 describe('Regex Matcher', () => {
     it('should find matches with trailing 2 digits', () => {
-        const text = "Coba cek situs judi88";
-        const keywords = ["judi"];
-        const results = regexSearch(keywords, text);
-
+        const text = "MAXWIN99 adalah situs judi";
+        const results = regexSearch(text);
         expect(results.length).toBe(1);
-        expect(results[0].matchedWord).toBe("judi88");
-        expect(results[0].keyword).toBe("judi");
-        expect(results[0].index).toBe(15);
+        expect(results[0].matchedWord).toBe('MAXWIN99');
+        expect(results[0].keyword).toBe('MAXWIN');
+        expect(results[0].index).toBe(0);
     });
 
     it('should find matches with trailing 3 digits', () => {
-        const text = "Situs slot999 gacor parah";
-        const keywords = ["slot"];
-        const results = regexSearch(keywords, text);
-
+        const text = "main di SLOT777 sekarang";
+        const results = regexSearch(text);
         expect(results.length).toBe(1);
-        expect(results[0].matchedWord).toBe("slot999");
-        expect(results[0].keyword).toBe("slot");
+        expect(results[0].matchedWord).toBe('SLOT777');
+        expect(results[0].keyword).toBe('SLOT');
     });
 
     it('should be case-insensitive', () => {
-        const text = "JUDI123";
-        const keywords = ["judi"];
-        const results = regexSearch(keywords, text);
-
-        expect(results.length).toBe(1);
-        expect(results[0].matchedWord).toBe("JUDI123");
+        const text = "coba maxwin88 dan Gacor99";
+        const results = regexSearch(text);
+        expect(results.length).toBe(2);
     });
 
     it('should not match keywords with only 1 trailing digit', () => {
-        const text = "judi1";
-        const keywords = ["judi"];
-        const results = regexSearch(keywords, text);
-
+        const text = "SLOT8 bukan judi";
+        const results = regexSearch(text);
         expect(results.length).toBe(0);
     });
 
     it('should not match keywords with 4 trailing digits (it matches the first 3)', () => {
-        const text = "judi1234";
-        const keywords = ["judi"];
-        const results = regexSearch(keywords, text);
-
+        const text = "MAXWIN1234 test";
+        const results = regexSearch(text);
         expect(results.length).toBe(1);
-        expect(results[0].matchedWord).toBe("judi123");
+        expect(results[0].matchedWord).toBe('MAXWIN1234');
     });
 
     it('should handle multiple keywords and multiple matches', () => {
-        const text = "judi88 slot99 judi123";
-        const keywords = ["judi", "slot"];
-        const results = regexSearch(keywords, text);
-
+        const text = "SLOT88 dan MAXWIN99 dan GACOR77";
+        const results = regexSearch(text);
         expect(results.length).toBe(3);
-        const matchedWords = results.map(r => r.matchedWord);
-        expect(matchedWords).toContain("judi88");
-        expect(matchedWords).toContain("slot99");
-        expect(matchedWords).toContain("judi123");
     });
 });

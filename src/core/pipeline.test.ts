@@ -4,7 +4,7 @@ import * as keywordLoader from '../utils/keyword-loader';
 
 // Mock performance.now
 if (typeof performance === 'undefined') {
-    (global as any).performance = { now: vi.fn(() => Date.now()) };
+    (globalThis as any).performance = { now: vi.fn(() => Date.now()) };
 }
 
 vi.mock('../utils/keyword-loader', () => ({

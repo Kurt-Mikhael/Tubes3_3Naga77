@@ -1,5 +1,5 @@
 import { ExactRes, RegexRes, FuzzyRes, PipelineRes} from "../types/type";
-import { loadKeywords, separateWords } from "../utils/keyword-loader";
+import { loadKeywords } from "../utils/keyword-loader";
 import { kmpSearch } from '../algorithms/kmp';
 import { bmSearch } from '../algorithms/boyer-moore';
 import { ahoCorasickSearch } from '../algorithms/aho-corasick';
@@ -19,7 +19,6 @@ export async function runPipeline(text: string): Promise<PipelineRes> {
     }
 
     const cachedLines = loadedLines!;
-    const cachedWords = separateWords(cachedLines);
 
     const t0 = performance.now();
     const kmpResults = kmpSearch(cachedLines, text);
@@ -52,7 +51,7 @@ export async function runPipeline(text: string): Promise<PipelineRes> {
         foundKeywords.add(r.keyword.toLowerCase());
     });
 
-    const missedFromExactRegex = cachedWords
+    const missedFromExactRegex = cachedLines
         .filter(w => !foundKeywords.has(w.toLowerCase()));
 
     const t5 = performance.now();

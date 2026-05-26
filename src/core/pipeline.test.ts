@@ -8,17 +8,7 @@ if (typeof performance === 'undefined') {
 }
 
 vi.mock('../utils/keyword-loader', () => ({
-    loadKeywords: vi.fn(),
-    separateWords: vi.fn((lines: string[]) => {
-        const keywords: string[] = [];
-        for(const l of lines){
-            const splitWords = l.split(" ").map(k => k.trim()).filter(k =>k.length > 0 && isNaN(Number(k)));
-            for (const w of splitWords){
-                keywords.push(w)
-            }
-        }
-        return keywords;
-    })
+    loadKeywords: vi.fn()
 }));
 
 describe('Pipeline', () => {

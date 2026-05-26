@@ -17,13 +17,3 @@ export async function loadKeywords(): Promise<string[]> {
     }
 }
 
-export function separateWords(lines: string[]): string[]{
-    const keywords: string[] = [];
-    for(const l of lines){
-        const splitWords = l.split(" ").map(k => k.trim()).filter(k =>k.length > 0 && isNaN(Number(k)));
-        for (const w of splitWords){
-            keywords.push(w)
-        }
-    }
-    return keywords;
-}

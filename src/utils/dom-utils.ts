@@ -28,8 +28,8 @@ export function walkTextNodes(root: Node): TextNodeInfo[] {
                     startIndex: currentIndex,
                     endIndex: currentIndex + text.length,
                 });
+                currentIndex += text.length + 1; // +1 for space separator
             }
-            currentIndex += text.length;
         } else {
             for (const child of Array.from(node.childNodes)) {
                 traverse(child);
@@ -43,7 +43,7 @@ export function walkTextNodes(root: Node): TextNodeInfo[] {
 
 
 export function buildAggregatedText(nodes: TextNodeInfo[]): string {
-    return nodes.map(n => n.node.textContent || '').join('');
+    return nodes.map(n => n.node.textContent || '').join(' ');
 }
 
 export function getNodeAndOffset(nodes: TextNodeInfo[], globalIndex: number): { node: Text; offset: number } | null {

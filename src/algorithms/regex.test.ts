@@ -31,11 +31,11 @@ describe('Regex Matcher', () => {
         expect(results.length).toBe(0);
     });
 
-    it('should not match keywords with 4 trailing digits (it matches the first 3)', () => {
+    it('should match only 2 or 3 trailing digits (not 4)', () => {
         const text = "MAXWIN1234 test";
         const results = regexSearch(text);
         expect(results.length).toBe(1);
-        expect(results[0].matchedWord).toBe('MAXWIN1234');
+        expect(results[0].matchedWord).toBe('MAXWIN123');
     });
 
     it('should handle multiple keywords and multiple matches', () => {

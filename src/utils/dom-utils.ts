@@ -148,33 +148,36 @@ export function highlightAll(
 
         const text = info.node.textContent || '';
 
-        // Deduplicate and sort by startLocal
         const seen = new Set<string>();
         const uniqueRanges = ranges.filter(r => {
             const key = `${r.startLocal}_${r.endLocal}_${r.match.keyword}`;
             if (seen.has(key)) return false;
             seen.add(key);
             return true;
-        }).sort((a, b) => a.startLocal - b.startLocal);
+        });
 
         if (uniqueRanges.length === 0) continue;
 
-        // Merge overlapping ranges
+        uniqueRanges.sort((a, b) => {
+            if (a.startLocal !== b.startLocal) return a.startLocal - b.startLocal;
+            const lenA = a.endLocal - a.startLocal;
+            const lenB = b.endLocal - b.startLocal;
+            if (lenA !== lenB) return lenA - lenB;
+            return a.match.keyword.localeCompare(b.match.keyword);
+        });
+
         const merged: { start: number; end: number; match: HighlightMatch }[] = [];
         for (const r of uniqueRanges) {
             const last = merged[merged.length - 1];
             if (last && r.startLocal < last.end) {
-                // Overlap: extend if this range goes farther, adopt its match data
-                if (r.endLocal > last.end) {
-                    last.end = r.endLocal;
-                    last.match = r.match;
+                last.end = r.startLocal;
+                if (last.end <= last.start) {
+                    merged.pop();
                 }
-            } else {
-                merged.push({ start: r.startLocal, end: r.endLocal, match: r.match });
             }
+            merged.push({ start: r.startLocal, end: r.endLocal, match: r.match });
         }
 
-        // Build segments: text, match, text, match, ...
         const segments: { start: number; end: number; match: HighlightMatch | null }[] = [];
         let current = 0;
 
@@ -216,6 +219,7 @@ export function highlightAll(
 export function clearHighlights(doc: Document = document): void {
     const highlights = doc.querySelectorAll('.judol-detector-highlight, .judol-detector-blur');
     highlights.forEach(el => {
+        if (el.tagName.toLowerCase() === 'img') return;
         const parent = el.parentNode;
         if (!parent) return;
         parent.insertBefore(document.createTextNode(el.textContent || ''), el);
@@ -280,6 +284,7 @@ export function hideTooltip(tooltip: HTMLElement): void {
 export function setBlurEnabled(enabled: boolean): void {
     const highlights = document.querySelectorAll('.judol-detector-highlight, .judol-detector-blur');
     highlights.forEach(el => {
+        if (el.tagName.toLowerCase() === 'img') return;
         if (enabled) {
             el.classList.remove('judol-detector-highlight');
             el.classList.add('judol-detector-blur');

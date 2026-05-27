@@ -63,13 +63,14 @@ async function initPopup() {
         });
     }
 
-    // Toggle OCR
     const ocrToggle = document.getElementById('ocr-toggle') as HTMLInputElement;
     if (ocrToggle) {
-        // Load saved state
+        chrome.storage.local.get(['ocrEnabled'], (res) => {
+            ocrToggle.checked = !!res.ocrEnabled;
+        });
+
         chrome.runtime.sendMessage({ type: 'GET_OCR_STATE', tabId }, (response) => {
             if (response && response.state) {
-                ocrToggle.checked = response.state.enabled;
                 updateOcrResult(response.state.detected, response.state.blurred);
             }
         });
@@ -79,7 +80,6 @@ async function initPopup() {
         });
     }
 
-    // OCR manual scan button
     const ocrBtn = document.getElementById('ocr-btn') as HTMLButtonElement;
     if (ocrBtn) {
         ocrBtn.addEventListener('click', () => {

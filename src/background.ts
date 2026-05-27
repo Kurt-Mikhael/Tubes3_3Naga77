@@ -41,6 +41,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === 'TOGGLE_OCR') {
         const targetTabId = message.tabId;
         ocrStates.set(targetTabId, { enabled: message.enabled, detected: 0, blurred: 0 });
+        chrome.storage.local.set({ ocrEnabled: message.enabled });
         chrome.tabs.sendMessage(targetTabId, { type: 'TOGGLE_OCR', enabled: message.enabled }, (res) => {
             sendResponse({ ok: true });
         });
@@ -55,21 +56,46 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 state.detected += res.data.detected;
                 state.blurred += res.data.blurred;
                 ocrStates.set(targetTabId, state);
+                sendResponse({ ok: true, data: res.data });
+            } else {
+                sendResponse({ ok: false, error: res?.error || 'Unknown error' });
             }
-            sendResponse({ ok: true, data: res });
         });
         return true;
     }
 
+    if (message.type === 'FETCH_IMAGE_BASE64') {
+        fetch(message.url)
+            .then(response => response.blob())
+            .then(blob => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    sendResponse({ ok: true, dataUrl: reader.result });
+                };
+                reader.readAsDataURL(blob);
+            })
+            .catch(err => {
+                sendResponse({ ok: false, error: err.toString() });
+            });
+        return true; 
+    }
+
     if (message.type === 'GET_OCR_STATE') {
         const targetTabId = message.tabId;
-        const state = ocrStates.get(targetTabId) || { enabled: false, detected: 0, blurred: 0 };
-        sendResponse({ state });
+        const state = ocrStates.get(targetTabId);
+        if (state) {
+            sendResponse({ state });
+        } else {
+            chrome.storage.local.get(['ocrEnabled'], (res) => {
+                sendResponse({ state: { enabled: !!res.ocrEnabled, detected: 0, blurred: 0 } });
+            });
+            return true;
+        }
         return false;
     }
 
     if (message.type === 'OCR_COMPLETE') {
-        const targetTabId = message.tabId;
+        const targetTabId = sender.tab?.id;
         if (targetTabId !== undefined && message.data) {
             const state = ocrStates.get(targetTabId) || { enabled: true, detected: 0, blurred: 0 };
             state.detected += message.data.detected;

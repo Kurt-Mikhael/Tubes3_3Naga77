@@ -83,23 +83,6 @@
   filter: blur(4px) !important;
 }
 
-.judol-detector-blur::after {
-  content: '🚫 Judol Content';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(220, 53, 69, 0.9);
-  color: white;
-  padding: 8px 16px;
-  border-radius: 4px;
-  font-weight: bold;
-  font-size: 14px;
-  pointer-events: none;
-  white-space: nowrap;
-  z-index: 10;
-}
-
 .judol-detector-tooltip.image-blur-tooltip {
   background: #dc3545;
 }

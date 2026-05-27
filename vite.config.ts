@@ -37,11 +37,20 @@ function copyStaticPlugin() {
         resolve(__dirname, 'src/content/content.css'),
         resolve(__dirname, 'dist/styles/content.css')
       );
+
+      try {
+        const tesseractSrc = resolve(__dirname, 'public/tesseract');
+        const tesseractDest = resolve(__dirname, 'dist/tesseract');
+        const { cpSync } = require('fs');
+        cpSync(tesseractSrc, tesseractDest, { recursive: true, force: true });
+      } catch (e) {
+      }
     }
   };
 }
 
 export default defineConfig({
+  base: './',
   build: {
     outDir: 'dist',
     emptyOutDir: true,

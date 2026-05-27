@@ -100,7 +100,6 @@
   z-index: 10;
 }
 
-/* Tooltip khusus untuk gambar blur */
 .judol-detector-tooltip.image-blur-tooltip {
   background: #dc3545;
 }

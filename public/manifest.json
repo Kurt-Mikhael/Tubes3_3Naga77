@@ -27,7 +27,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["keywords.txt"],
+      "resources": ["keywords.txt", "tesseract/*"],
       "matches": ["<all_urls>"]
     }
   ]

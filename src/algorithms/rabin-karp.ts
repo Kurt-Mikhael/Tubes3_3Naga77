@@ -53,11 +53,9 @@ export function rabinKarpSearch(keywords: string[], text: string): ExactRes[] {
 
             // Next Window Please
             if (i < N - M) {
-                t = (d * (t - lowerText.charCodeAt(i) * h) + lowerText.charCodeAt(i + M)) % q;
-                
-                if (t < 0) {
-                    t = t + q;
-                }
+                const outChar = lowerText.charCodeAt(i);
+                const hMod = (outChar % q * (h % q)) % q;  // pecah perkalian dulu
+                t = (d * ((t - hMod + q) % q) + lowerText.charCodeAt(i + M)) % q;
             }
         }
 

@@ -78,7 +78,7 @@ async function scanPage(): Promise<void> {
     for (const match of results.regex) {
         allMatches.push({
             startGlobal: match.index,
-            endGlobal: match.index + match.matchedWord.length,
+            endGlobal: match.endIndex ?? match.index + match.matchedWord.length,
             keyword: match.matchedWord,
             algorithm: 'RegEx',
             count: results.regex.length,
@@ -91,7 +91,7 @@ async function scanPage(): Promise<void> {
     for (const match of results.fuzzy) {
         allMatches.push({
             startGlobal: match.index,
-            endGlobal: match.index + match.matchedWord.length,
+            endGlobal: match.endIndex ?? match.index + match.matchedWord.length,
             keyword: match.keyword,
             matchedWord: match.matchedWord,
             algorithm: 'Fuzzy (Weighted Levenshtein)',
@@ -102,6 +102,25 @@ async function scanPage(): Promise<void> {
     }
 
     highlightAll(textNodes, allMatches);
+
+    // Hitung statistik berdasarkan apa yang benar-benar ter-render di DOM
+    const highlightSpans = document.querySelectorAll('.judol-detector-highlight');
+    const uniqueDomKeywords = new Set<string>();
+    const algorithmCounts: Record<string, number> = {};
+
+    highlightSpans.forEach((span) => {
+        const el = span as HTMLElement;
+        const kw = el.dataset.keyword || '';
+        const algo = el.dataset.algorithm || '';
+        if (kw) uniqueDomKeywords.add(kw.toLowerCase());
+        algorithmCounts[algo] = (algorithmCounts[algo] || 0) + 1;
+    });
+
+    results.highlightStats = {
+        totalHighlights: highlightSpans.length,
+        uniqueKeywordCount: uniqueDomKeywords.size,
+        algorithmCounts,
+    };
 
     if (isBlurEnabled) {
         setBlurEnabled(true);

@@ -8,12 +8,12 @@ export function regexSearch(text: string): RegexRes[] {
 
     for (const match of matches) {
         const full = match[0];
-        
         const wordPart = full.replace(/\d+$/, '');
         res.push({
             matchedWord: full,
             keyword: wordPart,
-            index: match.index
+            index: match.index!,
+            endIndex: match.index! + full.length
         });
     }
     return res;

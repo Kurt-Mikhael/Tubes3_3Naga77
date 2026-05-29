@@ -133,9 +133,10 @@ export function fuzzySearch(keywords: string[], text: string): FuzzyRes[]{
             const normalize = cost / Math.max(keywords[i].length, words[j].word.length)
             if (normalize <= 0.3){
                 res.push({
-                    matchedWord: words[j].word, 
+                    matchedWord: words[j].word,
                     keyword: keywords[i],
                     index: words[j].index,
+                    endIndex: words[j].endIndex,
                     difDis : normalize
                 })
             }

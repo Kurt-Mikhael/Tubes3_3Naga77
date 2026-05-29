@@ -1,13 +1,15 @@
 export interface RegexRes{
-    matchedWord: string, 
+    matchedWord: string,
     keyword: string,
-    index: number
+    index: number,
+    endIndex: number
 };
 
 export interface FuzzyRes{
-    matchedWord: string, 
+    matchedWord: string,
     keyword: string,
     index: number,
+    endIndex: number,
     difDis : number
 };
 
@@ -19,6 +21,12 @@ export interface ExactRes {
     algorithm: 'KMP' | 'BM' |'AC' | 'RK'
 }
 
+
+export interface HighlightStats {
+    totalHighlights: number;
+    uniqueKeywordCount: number;
+    algorithmCounts: Record<string, number>;
+}
 
 export interface PipelineRes {
     exact: {
@@ -36,5 +44,6 @@ export interface PipelineRes {
         rabinKarp: number,
         regex: number,
         fuzzy: number
-    }
+    },
+    highlightStats?: HighlightStats
 }

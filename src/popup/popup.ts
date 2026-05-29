@@ -17,6 +17,11 @@ interface PipelineData {
         regex: number;
         fuzzy: number;
     };
+    highlightStats?: {
+        totalHighlights: number;
+        uniqueKeywordCount: number;
+        algorithmCounts: Record<string, number>;
+    };
 }
 
 async function initPopup() {
@@ -113,16 +118,17 @@ function updateUI(data: PipelineData) {
     const regexCount = data.regex.length;
     const fuzzyCount = data.fuzzy.length;
 
-    // Total unique keywords
-    const uniqueKeywords = new Set<string>();
-    data.exact.kmp.forEach((r: any) => uniqueKeywords.add(r.keyword.toLowerCase()));
-    data.exact.bm.forEach((r: any) => uniqueKeywords.add(r.keyword.toLowerCase()));
-    data.exact.ahoCorasick.forEach((r: any) => uniqueKeywords.add(r.keyword.toLowerCase()));
-    data.exact.rabinKarp.forEach((r: any) => uniqueKeywords.add(r.keyword.toLowerCase()));
-    data.regex.forEach((r: any) => uniqueKeywords.add(r.keyword.toLowerCase()));
-    data.fuzzy.forEach((r: any) => uniqueKeywords.add(r.keyword.toLowerCase()));
-
-    const totalUnique = uniqueKeywords.size;
+    // Total unique keywords berdasarkan yang benar-benar ter-highlight di DOM
+    const totalUnique = data.highlightStats?.uniqueKeywordCount ?? (() => {
+        const uniqueKeywords = new Set<string>();
+        data.exact.kmp.forEach((r: any) => uniqueKeywords.add(r.keyword.toLowerCase()));
+        data.exact.bm.forEach((r: any) => uniqueKeywords.add(r.keyword.toLowerCase()));
+        data.exact.ahoCorasick.forEach((r: any) => uniqueKeywords.add(r.keyword.toLowerCase()));
+        data.exact.rabinKarp.forEach((r: any) => uniqueKeywords.add(r.keyword.toLowerCase()));
+        data.regex.forEach((r: any) => uniqueKeywords.add(r.keyword.toLowerCase()));
+        data.fuzzy.forEach((r: any) => uniqueKeywords.add(r.keyword.toLowerCase()));
+        return uniqueKeywords.size;
+    })();
 
     // Update total
     const totalEl = document.getElementById('total-keywords');

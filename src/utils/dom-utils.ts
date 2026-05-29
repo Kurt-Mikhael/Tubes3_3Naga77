@@ -169,13 +169,19 @@ export function highlightAll(
         const merged: { start: number; end: number; match: HighlightMatch }[] = [];
         for (const r of uniqueRanges) {
             const last = merged[merged.length - 1];
-            if (last && r.startLocal < last.end) {
-                last.end = r.startLocal;
-                if (last.end <= last.start) {
-                    merged.pop();
+            if (last && r.startLocal <= last.end) {
+                // Overlapping or adjacent: extend range and keep match with longer coverage
+                if (r.endLocal > last.end) {
+                    const lastLen = last.end - last.start;
+                    const currLen = r.endLocal - r.startLocal;
+                    last.end = r.endLocal;
+                    if (currLen > lastLen) {
+                        last.match = r.match;
+                    }
                 }
+            } else {
+                merged.push({ start: r.startLocal, end: r.endLocal, match: r.match });
             }
-            merged.push({ start: r.startLocal, end: r.endLocal, match: r.match });
         }
 
         const segments: { start: number; end: number; match: HighlightMatch | null }[] = [];

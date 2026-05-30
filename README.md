@@ -33,6 +33,22 @@ Algoritma Boyer-Moore adalah algoritma pencarian string yang efisien dengan mela
 - Best Case: O(n/m)
 - Worst Case: O(nm)
 
+### Aho-Corasick (Bonus)
+Aho-Corasick adalah algoritma yang sangat efisien untuk mencari banyak keyword sekaligus (multiple pattern matching). Seluruh keyword diproses ke dalam satu struktur **Trie** (Pohon) yang dilengkapi dengan *failure links* dan *output links*. Alih-alih melakukan iterasi berulang, teks hanya perlu dipindai **satu kali** untuk mendeteksi semua keyword secara simultan.
+- **Kompleksitas:** O(n + m + z) di mana n adalah panjang teks, m adalah total panjang seluruh keyword, dan z adalah jumlah temuan.
+
+### Rabin-Karp (Bonus)
+Berbeda dengan algoritma lain yang mencocokkan karakter secara individual, Rabin-Karp mengonversi string menjadi nilai numerik menggunakan fungsi matematika **Rolling Hash**. Teks dipindai menggunakan *sliding window*, dan pencocokan karakter secara manual hanya dilakukan jika nilai hash window teks sama persis dengan nilai hash keyword untuk mencegah *hash collision* (Spurious Hit).
+- **Kompleksitas:**
+  - Rata-rata: O(n + m)
+  - Worst Case: O(n * m) (jika terjadi banyak hash collision)
+
+### Regular Expression (RegEx)
+Digunakan sebagai lapisan pertahanan untuk mendeteksi modifikasi teks yang menambahkan variasi numerik di akhir kata kunci utama. Algoritma ini dikonfigurasi untuk menangkap pola `<kata><angka>` (contoh: `maxwin88`, `slot99`, `gacor123`) yang sering digunakan oleh situs judi untuk menghindari blokir dari exact matching biasa.
+
+### Weighted Levenshtein Distance (Fuzzy Matching)
+Berfungsi untuk menangkap kata kunci yang disamarkan dengan *typo* disengaja atau substitusi karakter (*leetspeak/homoglyph*). Algoritma ini memodifikasi jarak Levenshtein tradisional dengan memberikan **bobot (weight)** yang lebih kecil pada penggantian karakter yang secara visual atau struktural mirip (misalnya huruf 'a' diganti angka '4', huruf 'o' diganti angka '0', atau huruf 'i' diganti '1'). Jika jarak modifikasi masih berada di bawah *threshold* yang ditentukan, sistem akan menandainya sebagai deteksi positif.
+
 ## Requirement Program dan Instalasi
 
 ### Prerequisites
@@ -96,36 +112,68 @@ Mode ini akan memantau perubahan file dan melakukan rebuild secara otomatis.
 
 ```
 Tubes3_3Naga77/
-│
-├── public/
-│   ├── manifest.json          # Konfigurasi Chrome Extension (Manifest V3)
-│   └── images/                # Icon extension
-│
-├── src/
-│   ├── algorithms/
-│   │   ├── kmp.ts             # Implementasi algoritma KMP
-│   │   ├── boyer-moore.ts     # Implementasi algoritma Boyer-Moore
-│   │   ├── regex.ts           # Implementasi Regex matching
-│   │   └── weighted-levenshtein.ts  # Implementasi fuzzy matching
-│   ├── content/
-│   │   ├── content.ts         # Content script untuk scanning DOM
-│   │   └── content.css        # Styles untuk highlight dan tooltip
-│   ├── popup/
-│   │   ├── popup.html         # HTML popup extension
-│   │   ├── popup.css          # Styles popup
-│   │   └── popup.ts           # Script popup
-│   ├── utils/
-│   │   ├── dom-utils.ts       # Helper manipulasi DOM
-│   │   └── keyword-loader.ts  # Loader untuk keywords.txt
-│   └── background.ts          # Background service worker
-│
-├── keywords/
-│   └── keywords.txt           # Daftar kata kunci judol
-│
-├── package.json
-├── tsconfig.json
-├── vite.config.ts
-└── README.md
+├── dist/                          # Hasil build ekstensi siap pakai
+│   ├── images/
+│   │   └── README.md
+│   ├── styles/
+│   │   └── content.css
+│   ├── tesseract/
+│   │   └── worker.min.js
+│   ├── background.js
+│   ├── content.js
+│   ├── keywords.txt
+│   ├── manifest.json
+│   ├── popup.css
+│   ├── popup.html
+│   └── popup.js
+├── docs/                          # Dokumen laporan tugas besar
+│   └── 3Naga77.pdf
+├── keywords/                      # Daftar kata kunci pencarian
+│   └── keywords.txt
+├── node_modules/                  # Dependensi proyek
+├── public/                        # Aset statis yang akan disalin saat build
+│   ├── images/
+│   │   └── README.md
+│   ├── tesseract/
+│   │   └── worker.min.js
+│   └── manifest.json              # Konfigurasi Chrome Extension
+├── src/                           # Kode sumber utama ekstensi
+│   ├── algorithms/                # Implementasi algoritma pencarian & unit test
+│   │   ├── aho-corasick.test.ts
+│   │   ├── aho-corasick.ts
+│   │   ├── boyer-moore.test.ts
+│   │   ├── boyer-moore.ts
+│   │   ├── kmp.test.ts
+│   │   ├── kmp.ts
+│   │   ├── rabin-karp.test.ts
+│   │   ├── rabin-karp.ts
+│   │   ├── regex.test.ts
+│   │   ├── regex.ts
+│   │   ├── weighted-levenshtein.test.ts
+│   │   └── weighted-levenshtein.ts
+│   ├── content/                   # Content script untuk integrasi ke DOM halaman
+│   │   ├── content.css
+│   │   └── content.ts
+│   ├── core/                      # Alur logika utama
+│   │   ├── pipeline.test.ts
+│   │   └── pipeline.ts
+│   ├── popup/                     # Antarmuka panel ekstensi
+│   │   ├── popup.css
+│   │   ├── popup.html
+│   │   └── popup.ts
+│   ├── types/                     # Definisi tipe data TypeScript
+│   │   └── type.ts
+│   ├── utils/                     # Fungsi pembantu (helpers)
+│   │   ├── dom-utils.ts
+│   │   ├── keyword-loader.ts
+│   │   └── text-utils.ts
+│   └── background.ts              # Background service worker
+├── .gitignore
+├── package-lock.json
+├── package.json                   # Konfigurasi dependensi dan scripts npm
+├── README.md                      # Dokumentasi proyek
+├── tsconfig.json                  # Konfigurasi kompilator TypeScript
+└── vite.config.ts                 # Konfigurasi Vite bundler
 ```
 
 ## Fitur
@@ -151,23 +199,23 @@ Tubes3_3Naga77/
 
 | No | Poin                                                                                                                         | Ya | Tidak |
 | -- | ---------------------------------------------------------------------------------------------------------------------------- | -- | ----- |
-| 1  | Extension berhasil di-build dan di-load tanpa kesalahan pada chromium browser dan dikembangkan dengan TypeScript             |    |       |
-| 2  | KMP dan Boyer-Moore diimplementasikan from scratch                                                                           |    |       |
-| 3  | Regex menghandle format `<kata><angka>` dan berbagai edge case                                                             |    |       |
-| 4  | Pencarian KMP & BM membaca keyword.txt secara iteratif dan tidak menggunakan built-in search function atau library eksternal |    |       |
-| 5  | Exact matching dan fuzzy matching berjalan benar                                                                             |    |       |
-| 6  | Elemen DOM terdeteksi diberi highlight dan terhapus saat rescanning                                                          |    |       |
-| 7  | Tooltip muncul saat hover dengan informasi keyword, algoritma, kemunculan, dan waktu eksekusi                                |    |       |
-| 8  | Popup menampilkan statistik realtime (total keyword, perbandingan, waktu eksekusi, jumlah match)                             |    |       |
-| 9  | [Bonus] Membuat Video                                                                                                        |    |       |
-| 10 | [Bonus] Implementasi Algoritma Aho-Corasick dan Rabin Karp                                                                   |    |       |
-| 11 | [Bonus] Implementasi Censorship / Blur Teks                                                                                  |    |       |
-| 12 | [Bonus] Implementasi Optical Character Recognition pada Gambar                                                               |    |       |
+| 1  | Extension berhasil di-build dan di-load tanpa kesalahan pada chromium browser dan dikembangkan dengan TypeScript             | ✓  |       |
+| 2  | KMP dan Boyer-Moore diimplementasikan from scratch                                                                           | ✓  |       |
+| 3  | Regex menghandle format `<kata><angka>` dan berbagai edge case                                                             | ✓  |       |
+| 4  | Pencarian KMP & BM membaca keyword.txt secara iteratif dan tidak menggunakan built-in search function atau library eksternal | ✓  |       |
+| 5  | Exact matching dan fuzzy matching berjalan benar                                                                             | ✓  |       |
+| 6  | Elemen DOM terdeteksi diberi highlight dan terhapus saat rescanning                                                          | ✓  |       |
+| 7  | Tooltip muncul saat hover dengan informasi keyword, algoritma, kemunculan, dan waktu eksekusi                                | ✓  |       |
+| 8  | Popup menampilkan statistik realtime (total keyword, perbandingan, waktu eksekusi, jumlah match)                             | ✓  |       |
+| 9  | [Bonus] Membuat Video                                                                                                        | ✓  |       |
+| 10 | [Bonus] Implementasi Algoritma Aho-Corasick dan Rabin Karp                                                                   | ✓  |       |
+| 11 | [Bonus] Implementasi Censorship / Blur Teks                                                                                  | ✓  |       |
+| 12 | [Bonus] Implementasi Optical Character Recognition pada Gambar                                                               | ✓  |       |
 
 ## Author
 
 Kelompok: **3Naga77**
 
-- **Anggota 1** - NIM - Nama
-- **Anggota 2** - NIM - Nama
-- **Anggota 3** - NIM - Nama
+- **Anggota 1** - 13524065 - Kurt Mikhael Purba
+- **Anggota 2** - 13524079 - Angelina Andra Alanna
+- **Anggota 3** - 13524096 - Moreno Syawali Ganda Sugita
